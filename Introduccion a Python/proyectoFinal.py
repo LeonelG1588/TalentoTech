@@ -184,17 +184,17 @@ def agregarProducto():
 
     idI = generarId()
     nombre = pedirNombre() 
-    descripcion = pedirDescripcion()
+    categoria = pedirCategoria()
     cantidad = pedirCantidad()
     precio = pedirPrecio()
-    categoria = pedirCategoria()
+    descripcion = pedirDescripcion()
 
     producto = {"id" : idI,
                 "nombre" : nombre,
-                "descripcion" : descripcion,
+                "categoria" : categoria,
                 "cantidad" : cantidad, 
                 "precio" : precio,
-                "categoria" : categoria,}
+                "descripcion" : descripcion,}
         
     lstProductos.append(producto)
     console.print("[bold green]\nProducto/s cargado/s correctamente ✅\n[/]")
@@ -307,10 +307,10 @@ def actualizarProducto(idBuscado):
     console.print(
         Panel.fit(
             "[bold #d260ff]1.[/][white]Modificar nombre.[/]\n"
-            "[bold #d260ff]2.[/][white]Modificar descripcion.[/]\n"
+            "[bold #d260ff]2.[/][white]Modificar categoria.[/]\n"
             "[bold #d260ff]3.[/][white]Modificar cantidad.[/]\n"
             "[bold #d260ff]4.[/][white]Modificar precio.[/]\n"
-            "[bold #d260ff]5.[/][white]Modificar categoria.[/]\n"
+            "[bold #d260ff]5.[/][white]Modificar descripcion.[/]\n"
             "[bold #d260ff]6.[/][white]Volver al menu.[/]",
             title="[bold white]Menu[/]",
             border_style="#b700ff"
@@ -435,7 +435,6 @@ def generarReporteStock(min):
                     cantidad,
                     producto["descripcion"]
                 )
-                   
         if cantBajoStock == 0:
             console.print(f"[blue]No se encontraron productos con stock menor o igual a[/] [cyan]{min}[/]")
         else:
@@ -477,8 +476,6 @@ def reabastecerStock(lstProdBajoStock):
     volverMenu()
     
 def animacion():
-    texto = "SISTEMA DE GESTIÓN DE PRODUCTOS"
-
     texto = "TALENTO TECH"
 
     colores = [
