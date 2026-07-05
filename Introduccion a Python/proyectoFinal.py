@@ -384,7 +384,7 @@ def eliminarProducto(idBuscado):
     if not hayProductos():
         console.print("[blue]No quedan productos por eliminar.[/]")
     else:
-        print(f"[blue]Cantidad de productos actuales:[/] [cyan]{len(lstProductos)}[/]\n")
+        console.print(f"[blue]Cantidad de productos actuales:[/] [cyan]{len(lstProductos)}[/]\n")
 
     volverMenu() 
 
@@ -398,8 +398,9 @@ def establecerMinimo():
 def generarReporteStock(min):
     if not hayProductos():
         console.print(
-            "[bold red]No hay productos cargados.[/]]"
+            "[bold red]No hay productos cargados.[/]"
         )
+        volverMenu()
     else:
         tabla = Table(
         show_lines=True,
@@ -522,6 +523,7 @@ while opcion != 7:
             idBuscado = pedirId()
             if idBuscado == None:
                 volverMenu()
+                console.clear()
                 continue
             actualizarProducto(idBuscado)
             console.clear()
@@ -530,6 +532,7 @@ while opcion != 7:
             idBuscado = pedirId()
             if idBuscado == None:
                 volverMenu()
+                console.clear()
                 continue
             eliminarProducto(idBuscado)
             console.clear()
@@ -539,6 +542,7 @@ while opcion != 7:
             idBuscado = pedirId()
             if idBuscado == None:
                 volverMenu()
+                console.clear()
                 continue
             buscarProducto(idBuscado)
             console.clear()
