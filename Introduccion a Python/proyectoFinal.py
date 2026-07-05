@@ -1,178 +1,558 @@
-import os
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.live import Live
+from rich.align import Align
+from rich.text import Text
+import time
 
-carrito = []
+
+console = Console()
+console.clear()
+
 opcion = 0
+lstProductos = [{
+        "id": 1, 
+        "nombre": "Teclado Mecánico", 
+        "descripcion": "Teclado RGB con switches red", 
+        "cantidad": 15, 
+        "precio": 45.50, 
+        "categoria": "Periféricos"
+    },
+    {
+        "id": 2, 
+        "nombre": "Mouse Óptico", 
+        "descripcion": "Mouse inalámbrico ergonómico", 
+        "cantidad": 3, 
+        "precio": 20.00, 
+        "categoria": "Periféricos"
+    },
+    {
+        "id": 3, 
+        "nombre": "Monitor Gamer", 
+        "descripcion": "Monitor 24 pulgadas 144Hz", 
+        "cantidad": 2, 
+        "precio": 180.00, 
+        "categoria": "Monitores"
+    }]
 
-def cls():
-    os.system("cls" if os.name == "nt" else "clear")
-
-def generarId():
-    if not carrito:
-        return 1
-
-    return carrito[-1]["id"] + 1
 
 def volverMenu():
-    enter = input("Presione 'enter' para volver al menu.")
+    console.print("[dim #ff8800]Presione [bold white]'enter'[/] para volver al menu...[/]")
+    input()
+
+def preguntarContinuar(mensaje):
+    
+    while True:
+        resp = input(mensaje).strip().upper()
+        if resp in ["S", "N"]:
+            return resp
+        console.print("❌[red]Opción invalida. Ingrese 'S' o 'N'.[/]\n")
+
+def mostrarMenu():
+    console.print(
+        Panel.fit(
+            "[bold white]SISTEMA DE GESTION DE PRODUCTOS[/bold white]",
+            border_style="green"
+        )
+    )
+
+    console.print(
+        Panel.fit(
+            "[bold cyan]1.[/][white]Agregar producto/s.\n"
+            "[bold cyan]2.[/][white]Mostrar producto/s.[/]\n"
+            "[bold cyan]3.[/][white]Actualizar producto/s.[/]\n"
+            "[bold cyan]4.[/][white]Eliminar producto/s.[/]\n"
+            "[bold cyan]5.[/][white]Buscar producto/s.[/]\n"
+            "[bold cyan]6.[/][white]Generar reporte.[/]\n"
+            "[bold cyan]7.[/][white]Salir del programa.[/]",
+            title="[bold white]Menu Principal[/]",
+            border_style="blue"
+        )
+    )
+
+def elegirOpcion(minimo,maximo):
+
+    while True:
+        try:
+            opcion = int(input("Ingrese una de las opciones: ").strip())
+
+            if opcion < minimo or opcion > maximo:
+                console.print(f"❌[red] Opción invalida. Ingrese un número entre: {minimo} y {maximo}.[/]\n")
+            else:
+                return opcion
+        except ValueError:
+            console.print("❌[red] Debe ingresar un numero valido.[/]\n")
+
+    
+
+def hayProductos():
+    hayProductos = True
+    if not lstProductos:
+        hayProductos = False
+    return hayProductos
+
+def generarId():
+    if not lstProductos:
+        idI = 1
+    else:
+        idI = lstProductos[-1]["id"] + 1
+    return int(idI)
+
+def pedirId():
+    if not hayProductos():
+        console.print(
+            "[bold red]No hay productos cargados.[/]"
+        )
+        return None
+    
+    while True:
+        try:
+            idBuscado = int(input("Ingrese el 'id' del producto: ").strip())
+
+            if idBuscado < 1:
+                console.print("❌[red]Opción invalida. Debe ingresar un numero mayor a 0.[/]\n")
+                continue
+        
+            idsExistentes = [p["id"] for p in lstProductos]
+            if idBuscado not in idsExistentes:
+                console.print(f"❌[red]El producto con id=[{idBuscado}] no existe.[/]\n")
+                console.print(f"[blue]IDs de productos disponibles: {idsExistentes}[/]\n")
+                continue
+
+            console.print("[blue]Encontrado.[/]👍\n")
+            return idBuscado
+        
+        except ValueError:
+            console.print("❌[red]Opción invalida. Ingrese un numero entero valido[/]\n")
+
+def pedirNombre():
+
+    while True:
+        nombre = input("Ingrese el nombre del producto: ").strip().title()
+
+        if nombre == "":
+            console.print("❌[red] El campo no puede estar vacio.[/]\n")
+        elif not nombre.replace(" ","").isalpha():
+            console.print("❌[red] El campo solo puede contener letras.[/]\n")
+        else:
+            return nombre
+    
+def pedirDescripcion():
+    descripcion = input("Ingrese una descripcion del producto: ").strip().lower()
+    return descripcion
+
+def pedirCantidad():
+    while True:
+        try:
+            cantidad = int(input("Ingrese la cantidad: ").strip())
+
+            if cantidad <= 0:
+                console.print("❌[red] La cantidad debe ser mayor a 0.[/]\n")
+            else:
+                return cantidad
+        except ValueError:
+            console.print("❌[red] Debe ingresar un numero valido.[/]\n")
+    
+def pedirPrecio():
+    while True:
+        try:
+            precio = float(input("Ingrese el precio: ").strip())
+
+            if precio <= 0:
+                console.print("❌[red] El precio debe ser mayor a 0.[/]\n")
+            else:
+                return precio
+        except ValueError:
+            console.print("❌[red] Debe ingresar un numero valido.[/]\n")
+
+    
+def pedirCategoria():
+
+    while True:
+        categoria = input("Ingrese la categoria del producto: ").strip().title()
+
+        if categoria == "":
+            console.print("❌[red] El campo no puede estar vacio.[/]\n")
+        elif not categoria.replace(" ","").isalpha():
+            console.print("❌[red] El campo solo puede contener letras.[/]\n")
+        else:
+            return categoria
+
 
 def agregarProducto():
-    fin = ""
-    while fin.lower() != "fin":
 
-        nombre = input("Ingrese el nombre del producto: ").strip()
-        while nombre == "":
-            print("El campo no puede estar vacio.")
-            nombre = input("Ingrese el nombre del producto: ").strip()
-        nombre = nombre.title()   
+    idI = generarId()
+    nombre = pedirNombre() 
+    descripcion = pedirDescripcion()
+    cantidad = pedirCantidad()
+    precio = pedirPrecio()
+    categoria = pedirCategoria()
 
-        categoria = input("Ingrese la categoria del producto: ").strip()
-        while categoria == "":
-            print("El campo no puede estar vacio.")
-            categoria = input("Ingrese la categoria del producto: ").strip()
-        categoria = categoria.title()
-
-        precio = input("Ingrese el precio del producto: ").strip()
-        while not precio.isdecimal() or int(precio) <= 0:
-            print("Ingrese un numero entero que sea mayor a 0")
-            precio = input("Ingrese el precio del producto: ").strip()
-
-        iD = generarId()
+    producto = {"id" : idI,
+                "nombre" : nombre,
+                "descripcion" : descripcion,
+                "cantidad" : cantidad, 
+                "precio" : precio,
+                "categoria" : categoria,}
         
-        producto = {"id" : iD,"nombre" : nombre,"categoria" : categoria, "precio" : int(precio)}
-        carrito.append(producto)
-        print("\nProducto/s cargado/s correctamente.\n")
+    lstProductos.append(producto)
+    console.print("[bold green]\nProducto/s cargado/s correctamente ✅\n[/]")
             
-        fin = input("Escriba 'fin' para la dejar de cargar productos, o presione 'enter' para continuar: \n").strip().lower()
+    respuesta = preguntarContinuar("¿Desea agregar otro producto? (S/N): ")
+
+    if respuesta == "S":
+        agregarProducto()
+    else:
+        volverMenu()    
+    
+def mostrarProductos():
+    if not hayProductos():
+        console.print(
+            "[bold red]No hay productos cargados.[/]"
+        )
+    else:
+        tabla = Table(
+            show_lines=True,
+            header_style="bold white",
+            border_style="bright_yellow"
+            )
+        tabla.add_column("ID", style="bold white", justify="center")
+        tabla.add_column("Nombre", style="bold white", justify="center")
+        tabla.add_column("Categoria", style="bold white", justify="center")
+        tabla.add_column("Precio", style="bold white", justify="center")
+        tabla.add_column("Cantidad", justify="right")
+        tabla.add_column("Descripcion", style="bold white")
+
+        for producto in lstProductos:
+            if producto["cantidad"] <= 10:
+                cantidad = f"[blink red]{producto['cantidad']}[/]"
+            else:
+                cantidad = f"[bold green]{producto['cantidad']}[/]"
+            tabla.add_row(
+                str(f"[white]{producto['id']}[/]"),
+                producto["nombre"],
+                producto["categoria"],
+                f"${producto['precio']:.2f}",
+                cantidad,
+                producto["descripcion"]
+            )
+        console.print(tabla)
+    volverMenu()
+
+
+def buscarProducto(idBuscado):
+    tabla = Table(
+        header_style="bold white",
+        border_style="bright_yellow"
+    )
+    tabla.add_column("ID", style="bold white", justify="center")
+    tabla.add_column("Nombre", style="bold white", justify="center")
+    tabla.add_column("Categoria", style="bold white", justify="center")
+    tabla.add_column("Precio", style="bold white", justify="center")
+    tabla.add_column("Cantidad", justify="right")
+    tabla.add_column("Descripcion", style="bold white")
+    
+    for i,producto in enumerate(lstProductos):
+        if producto["id"] == idBuscado:  
+            console.print(f"[blue]Producto encontrado en la posicion:[/] [cyan]{i+1}[/]\n")
+            if producto["cantidad"] <= 10:
+                cantidad = f"[blink red]{producto['cantidad']}[/]"
+            else:
+                cantidad = f"[bold green]{producto['cantidad']}[/]"
+            tabla.add_row(
+                str(f"[white]{producto['id']}[/]"),
+                producto["nombre"],
+                producto["categoria"],
+                f"${producto['precio']:.2f}",
+                cantidad,
+                producto["descripcion"]
+            )
+            console.print(tabla)
+            break
+    
+    volverMenu()
+
+def actualizarProducto(idBuscado):
+    
+    tabla = Table(
+        header_style="bold white",
+        border_style="bright_yellow"
+    )
+    tabla.add_column("ID", style="bold white", justify="center")
+    tabla.add_column("Nombre", style="bold white", justify="center")
+    tabla.add_column("Categoria", style="bold white", justify="center")
+    tabla.add_column("Precio", style="bold white", justify="center")
+    tabla.add_column("Cantidad", justify="right")
+    tabla.add_column("Descripcion", style="bold white")
+    
+    for i,producto in enumerate(lstProductos):
+        if producto["id"] == idBuscado:  
+            console.print(f"[blue]Producto encontrado en la posicion:[/] [cyan]{i+1}[/]\n")
+            if producto["cantidad"] <= 10:
+                cantidad = f"[blink red]{producto['cantidad']}[/]"
+            else:
+                cantidad = f"[bold green]{producto['cantidad']}[/]"
+            tabla.add_row(
+                str(f"[white]{producto['id']}[/]"),
+                producto["nombre"],
+                producto["categoria"],
+                f"${producto['precio']:.2f}",
+                cantidad,
+                producto["descripcion"]
+            )
+            console.print(tabla)
+            break
+
+    console.print(
+        Panel.fit(
+            "[bold #d260ff]1.[/][white]Modificar nombre.[/]\n"
+            "[bold #d260ff]2.[/][white]Modificar descripcion.[/]\n"
+            "[bold #d260ff]3.[/][white]Modificar cantidad.[/]\n"
+            "[bold #d260ff]4.[/][white]Modificar precio.[/]\n"
+            "[bold #d260ff]5.[/][white]Modificar categoria.[/]\n"
+            "[bold #d260ff]6.[/][white]Volver al menu.[/]",
+            title="[bold white]Menu[/]",
+            border_style="#b700ff"
+        )
+    )
+    
+    
+    opcion = elegirOpcion(1,6)
+    
+    match opcion:
+
+        case 1:
+            print("")
+            for producto in lstProductos:
+                    if producto["id"] == idBuscado:
+                        producto["nombre"] = pedirNombre()
+                        break
+            console.print("[bold green]Nombre actualizado correctamente.[/]✅\n")
+
+        case 2:
+            print("")
+            for producto in lstProductos:
+                if producto["id"] == idBuscado:
+                    producto["descripcion"] = pedirDescripcion()
+                    break
+            console.print("[bold green]Descripcion actualizada correctamente.[/]✅\n")
+
+        case 3:
+            print("")
+            for producto in lstProductos:
+                if producto["id"] == idBuscado:
+                    producto["cantidad"] = pedirCantidad()
+                    break
+            console.print("[bold green]Cantidad actualizada correctamente.[/]✅\n")
+
+        case 4:
+            print("")
+            for producto in lstProductos:
+                if producto["id"] == idBuscado:
+                    producto["precio"] = pedirPrecio()
+                    break
+            console.print("[bold green]Precio actualizado correctamente.[/]✅\n")
+
+        case 5:
+            print("")
+            for producto in lstProductos:
+                if producto["id"] == idBuscado:
+                    producto["categoria"] = pedirCategoria()
+                    break
+            console.print("[bold green]Categoria actualizada correctamente.[/]✅\n")
+
+        case 6:
+            print("")
+        
+    respuesta = preguntarContinuar(f"¿Desea actualizar otro campo del producto con id {idBuscado}? (S/N): ")
+
+    if respuesta == "S":
+        console.clear()
+        actualizarProducto(idBuscado)
+    else:
+        volverMenu()
+
+
+def eliminarProducto(idBuscado):
+    global lstProductos
+    
+    cantProductos = len(lstProductos)
+    lstProductos = [p for p in lstProductos if p["id"] != idBuscado]
+    
+
+    if len(lstProductos) < cantProductos:
+        console.print(f"[green]Producto con id=[{idBuscado}] eliminado correctamente.[/]✅\n")
+
+    
+    if not hayProductos():
+        console.print("[blue]No quedan productos por eliminar.[/]")
+    else:
+        print(f"[blue]Cantidad de productos actuales:[/] [cyan]{len(lstProductos)}[/]\n")
+
+    volverMenu() 
+
+
+def establecerMinimo():
+    cantidadMin = pedirCantidad()
+    return cantidadMin
+
+
+
+def generarReporteStock(min):
+    if not hayProductos():
+        console.print(
+            "[bold red]No hay productos cargados.[/]]"
+        )
+    else:
+        tabla = Table(
+        show_lines=True,
+        header_style="bold white",
+        border_style="bright_yellow"
+        )
+        tabla.add_column("ID", style="bold white", justify="center")
+        tabla.add_column("Nombre", style="bold white", justify="center")
+        tabla.add_column("Categoria", style="bold white", justify="center")
+        tabla.add_column("Precio", style="bold white", justify="center")
+        tabla.add_column("Cantidad", justify="right")
+        tabla.add_column("Descripcion", style="bold white")
+        
+        cantBajoStock = 0
+        lstProductosBajoStock = []
+        
+        for i,producto in enumerate(lstProductos):
+            if producto["cantidad"] <= min:
+                cantBajoStock+=1
+                lstProductosBajoStock.append(producto["id"])
+                console.print(f"⚠️[blink yellow] Producto con bajo stock en la posicion:{i+1}![/]")
+                cantidad = f"[blink red]{producto['cantidad']}[/]"
+                
+                tabla.add_row(
+                    str(f"[white]{producto['id']}[/]"),
+                    producto["nombre"],
+                    producto["categoria"],
+                    f"${producto['precio']:.2f}",
+                    cantidad,
+                    producto["descripcion"]
+                )
+                   
+        if cantBajoStock == 0:
+            console.print(f"[blue]No se encontraron productos con stock menor o igual a[/] [cyan]{min}[/]")
+        else:
+            console.print(tabla)
+            console.print(f"[blue]Hay[/] [cyan]{cantBajoStock}[/] [blue]producto/s con bajo stock.[/]")
+            
+            respuesta = preguntarContinuar("¿Desea reabastecer algun producto? (S/N): ")
+
+            if respuesta == "S":
+                reabastecerStock(lstProductosBajoStock)
+            else:
+                volverMenu()  
+                
+
+def reabastecerStock(lstProdBajoStock):
+    console.rule("[bold cyan]REABASTECER STOCK[/]")
+
+    while True:
+        try:
+            idBuscado = int(input("Ingrese el 'id' del producto con bajo stock: ").strip())
+
+            if idBuscado not in lstProdBajoStock:
+                console.print(f"❌[red] Opción invalida. El id={idBuscado} no tiene bajo stock o no existe.[/]\n")
+                console.print(f"[blue]IDs de productos que puedes reabastecer:[/] [cyan]{lstProdBajoStock}[/]")
+                continue
+            break
+        except ValueError:
+            console.print("❌[red]Ingrese un numero entero valido.[/]\n")
+
+    for producto in lstProductos:
+        if producto["id"] == idBuscado:
+            cantidadAReabastecer = pedirCantidad()
+
+            producto["cantidad"] += cantidadAReabastecer
+
+            console.print(f"[green]Stock actualizado correctamente.✅[/] [white]|[/] [blue]Nuevo stock:[/] [cyan]{producto['cantidad']}[/].")
+            break
+    
     volverMenu()
     
-def mostrarProducto():
-    if not carrito:
-        print("No hay productos cargados.")
-    else:
-            
-        for i,producto in enumerate(carrito):
-            print(f"""
-        Id : {producto["id"]}
-        Nombre : {producto["nombre"]}
-        Categoria : {producto["categoria"]}
-        Precio : {producto["precio"]}
-        """)
-            
-    volverMenu()
+def animacion():
+    texto = "SISTEMA DE GESTIÓN DE PRODUCTOS"
 
+    texto = "TALENTO TECH"
 
-def buscarProducto(iD):
-    encontrado = False
-    for i, producto in enumerate(carrito):
-        if producto["id"] == iD:
-            encontrado = True
-            return i, producto
+    colores = [
+    "red",
+    "yellow",
+    "green",
+    "cyan",
+    "blue",
+    "magenta",
+    ]
 
-    return encontrado
+    with Live(refresh_per_second=15, console=console) as live:
 
+        for desplazamiento in range(60):
+
+            titulo = Text(style="bold")
+
+            for i, letra in enumerate(texto):
+                color = colores[(i + desplazamiento) % len(colores)]
+                titulo.append(letra, style=f"bold {color}")
+
+            live.update(Align.center(titulo))
+            time.sleep(0.10)
 
 
 
 while opcion != 7:
 
-    print("")
-    print("== MENU 'tienda generica' ==")
-    print("1.Agregar producto/s al carrito.")
-    print("2.Mostrar producto/s.")
-    print("3.Actualizar producto/s.")
-    print("4.Eliminar producto/s.")
-    print("5.Buscar producto/s.")
-    print("6.Generar reporte.")
-    print("7.Salir del programa.")
-    print("")
+    animacion()
+    mostrarMenu()
 
-
-    opcion = input("Ingrese una opcion: ")
-    while not opcion.isdecimal() or int(opcion) <= 0 or int(opcion) > 7:
-        print("Opción invalida. Ingrese un número (1-7).")
-        opcion = input("Ingrese una opción: ")
-
-    opcion = int(opcion)
+    opcion = elegirOpcion(1,7)
 
     match opcion:
 
-        #CARGA DE DATOS.
         case 1:
-            print("")
+            console.rule("[bold cyan]AGREGAR PRODUCTO[/]")
             agregarProducto()
-            cls()
-
-        #MUESTREO DE DATOS.                
+            console.clear()
         case 2:
-            print("")
-            mostrarProducto()
-            cls()
-            
-
-        #ACTUALIZACION DE DATOS
+            console.rule("[bold cyan]MOSTRAR PRODUCTOS[/]")
+            mostrarProductos()
+            console.clear()
         case 3:
-            print("")
-
-
-        #BUSQUEDA Y ELIMINACION DE DATOS.
+            console.rule("[bold cyan]ACTUALIZAR PRODUCTO[/]")
+            idBuscado = pedirId()
+            if idBuscado == None:
+                volverMenu()
+                continue
+            actualizarProducto(idBuscado)
+            console.clear()
         case 4:
-            print("")
-            if len(carrito) == 0:
-                print("No hay productos cargados.")
-                print("Volviendo al menu...")
-                enter = input()
-
-            else:
-
-                fin = ""
-                while fin.lower() != "fin":
-
-                    indice = input("Ingrese el numero del producto que desea eliminar: ")
-                    while not indice.isdecimal() or int(indice) < 1 or int(indice) > len(carrito):
-                        print(f"El numero ingresado no es valido. Tiene que ser un valor entre 1 y {len(carrito)}\n")
-                        indice = input("Ingrese el numero del producto que desea eliminar: ") 
-                    
-                    indice = int(indice) - 1
-                    productoEliminado = carrito.pop(indice)
-                    print(f"\n{productoEliminado.get('nombre')} en la posicion #{indice+1} eliminado correctamente.\n")
-
-                    if len(carrito) == 0:
-                        print("Ya no quedan productos en el carrito.")
-                        break
-
-                    fin = input("Ingrese 'fin' para la dejar de eliminar productos: \n")
-
-                
-                print("Volviendo al menu...")
-                enter = input()
+            console.rule("[bold cyan]ELIMINAR PRODUCTO[/]")
+            idBuscado = pedirId()
+            if idBuscado == None:
+                volverMenu()
+                continue
+            eliminarProducto(idBuscado)
+            console.clear()
 
         case 5:
-            print("")
-            iD = input("Ingrese el id del producto: ").strip()
-            while iD == "":
-                print("El campo no puede estar vacio.")
-                iD = input("Ingrese el id del producto: ").strip()
-
-            iD = int(iD)
-
-            resultado = buscarProducto(iD)
-
-            if resultado:
-                posicion, producto = resultado
-                print(f"""
-            Producto encontrado en posicion: #{posicion+1}
-            Id : {producto["id"]}
-            Nombre : {producto["nombre"]}
-            Categoria : {producto["categoria"]}
-            Precio : {producto["precio"]}
-            """)
-            else: 
-                print("No se encontró el producto.")
-            volverMenu()
+            console.rule("[bold cyan]BUSCAR PRODUCTO[/]")
+            idBuscado = pedirId()
+            if idBuscado == None:
+                volverMenu()
+                continue
+            buscarProducto(idBuscado)
+            console.clear()
         case 6:
-            print("Muchas gracias por comprar en 'tienda generica'.")
+            console.rule("[bold cyan]GENERAR REPORTE DE STOCK[/]")
+            generarReporteStock(establecerMinimo())
+            console.clear()
         case 7:
-            print("Muchas gracias por comprar en 'tienda generica'.")
+            console.print("[bold red]Saliendo del sistema...[/]")
             
             
 
