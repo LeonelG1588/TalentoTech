@@ -221,20 +221,16 @@ def mostrarProductos():
         tabla.add_column("Nombre", style="bold white", justify="center")
         tabla.add_column("Categoria", style="bold white", justify="center")
         tabla.add_column("Precio", style="bold white", justify="center")
-        tabla.add_column("Cantidad", justify="right")
+        tabla.add_column("Cantidad", style= "bold white", justify="right")
         tabla.add_column("Descripcion", style="bold white")
 
         for producto in lstProductos:
-            if producto["cantidad"] <= 10:
-                cantidad = f"[blink red]{producto['cantidad']}[/]"
-            else:
-                cantidad = f"[bold green]{producto['cantidad']}[/]"
             tabla.add_row(
                 str(f"[white]{producto['id']}[/]"),
                 producto["nombre"],
                 producto["categoria"],
                 f"${producto['precio']:.2f}",
-                cantidad,
+                str(producto['cantidad']),
                 producto["descripcion"]
             )
         console.print(tabla)
