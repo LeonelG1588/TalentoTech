@@ -503,11 +503,11 @@ def animacion():
             live.update(Align.center(titulo))
             time.sleep(0.10)
 
-
+animacion()
 
 while opcion != 7:
 
-    animacion()
+    
     mostrarMenu()
 
     opcion = elegirOpcion(1,7)
