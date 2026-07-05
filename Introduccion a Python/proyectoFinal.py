@@ -431,8 +431,10 @@ def generarReporteStock(min):
                     cantidad,
                     producto["descripcion"]
                 )
+                
         if cantBajoStock == 0:
             console.print(f"[blue]No se encontraron productos con stock menor o igual a[/] [cyan]{min}[/]")
+            volverMenu()
         else:
             console.print(tabla)
             console.print(f"[blue]Hay[/] [cyan]{cantBajoStock}[/] [blue]producto/s con bajo stock.[/]")
